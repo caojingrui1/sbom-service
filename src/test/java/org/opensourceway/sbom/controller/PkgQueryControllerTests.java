@@ -193,7 +193,7 @@ public class PkgQueryControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("Invalid UUID string: 11"));
+                .andExpect(content().string("query sbom package error"));
     }
 
     @Test
@@ -208,7 +208,7 @@ public class PkgQueryControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("packageId:134aaa0c-1111-1111-1111-05686b9fc20c is not exist"));
+                .andExpect(content().string("the queried package doesn't exist"));
     }
 
     @Test
@@ -361,7 +361,7 @@ public class PkgQueryControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("maven purl query condition params is error, namespace: zookeeper, name: , version: , startVersion: null, endVersion: null"));
+                .andExpect(content().string("query sbom packages failed."));
     }
 
     @Test
@@ -379,7 +379,7 @@ public class PkgQueryControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("purl query condition not support type: pip"));
+                .andExpect(content().string("query sbom packages failed."));
     }
 
     @Test

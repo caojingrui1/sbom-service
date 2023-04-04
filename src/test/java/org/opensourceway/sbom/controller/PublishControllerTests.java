@@ -13,7 +13,6 @@ import org.opensourceway.sbom.dao.ProductConfigValueRepository;
 import org.opensourceway.sbom.dao.ProductRepository;
 import org.opensourceway.sbom.dao.ProductTypeRepository;
 import org.opensourceway.sbom.dao.RawSbomRepository;
-import org.opensourceway.sbom.model.constants.PublishSbomConstants;
 import org.opensourceway.sbom.model.entity.Product;
 import org.opensourceway.sbom.model.entity.ProductConfig;
 import org.opensourceway.sbom.model.entity.RawSbom;
@@ -33,7 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -85,7 +83,7 @@ public class PublishControllerTests {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("can't find mindsporeTestERROR's product metadata"));
+                .andExpect(content().string("uploadSbomFile failed"));
     }
 
     @Test
@@ -93,7 +91,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(null,
                 null,
                 null,
-                "product name is empty");
+                "publish sbom failed!");
     }
 
     @Test
@@ -101,7 +99,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 null,
                 null,
-                "sbom content is empty");
+                "publish sbom failed!");
     }
 
     @Test
@@ -109,7 +107,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "{}",
                 null,
-                "sbom content type is empty");
+                "publish sbom failed!");
     }
 
     @Test
@@ -117,8 +115,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "{}",
                 "x",
-                "Invalid sbomContentType: x, allowed types: %s".formatted(
-                        Arrays.stream(SbomContentType.values()).map(SbomContentType::getType).toList()));
+                "publish sbom failed!");
     }
 
     @Test
@@ -126,7 +123,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME + "1",
                 "{}",
                 SbomContentType.SPDX_2_2_JSON_SBOM.getType(),
-                "can't find %s1's product metadata".formatted(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -134,7 +131,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "x",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "sbomContent is not a valid base64 encoded string");
+                "publish sbom failed!");
     }
 
     @Test
@@ -142,7 +139,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "x",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "sbomContent is not a valid base64 encoded string");
+                "publish sbom failed!");
     }
 
     @Test
@@ -150,7 +147,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "MQ==",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "Failed to extract sbomContent tar");
+                "publish sbom failed!");
     }
 
     @Test
@@ -158,7 +155,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "MQ==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "Failed to extract sbomContent tar");
+                "publish sbom failed!");
     }
 
     @Test
@@ -166,7 +163,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAAyvJLdArSSzSS69ioBkwAAIzExMGAzMDQ3NTQzBtYGAIFgcBQzNDBkMTYxNTM0MTIzNzBqCsuakRg4IB7ZyEAKXFQO8rKDAkpuRm5tHDwsEF5Ls5IAzmt+d28x5yEGE5oP3U6oHcPn/baR4cPQIz/hmKySoIn1XRzt20W+97sFXEzZ5rQS9V3bptvTv3/vcKXH6r6srnkO11XyQ0ty/ur90z7/WfE5Znpz+t+n1cAW7Ln3e8+9tjnzBoDIwnR8EoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AYAgCq+cxBACgAAA==",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -174,7 +171,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAAyvJLdArSSzSS69ioBkwAAIzExMGAzMDQ3NTQzBtYGAIFgcBQzNDBkMTYxNTM0MTIzNzBqCsuakRg4IB7ZyEAKXFQO8rKDAkpuRm5tHDwsEF5Ls5IAzmt+d28x5yEGE5oP3U6oHcPn/baR4cPQIz/hmKySoIn1XRzt20W+97sFXEzZ5rQS9V3bptvTv3/vcKXH6r6srnkO11XyQ0ty/ur90z7/WfE5Znpz+t+n1cAW7Ln3e8+9tjnzBoDIwnR8EoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AYAgCq+cxBACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -182,7 +179,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA+3PMQrDMAyFYR3FJ0glbNnHKYEkxdC40KZLT98QumZK6PR/ywMt72kYp9rqUh/tOtX72C39s7t9LnImXRV30axW3LZUte3+I5Zi8mxeUhK1GLNJ8FNX7Hi/1pdDkH6Ya/tHIQAAAAAAAAAAAAAAAAAAx30BmAQDQgAoAAA=",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -190,7 +187,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA+3PMQrDMAyFYR3FJ0glbNnHKYEkxdC40KZLT98QumZK6PR/ywMt72kYp9rqUh/tOtX72C39s7t9LnImXRV30axW3LZUte3+I5Zi8mxeUhK1GLNJ8FNX7Hi/1pdDkH6Ya/tHIQAAAAAAAAAAAAAAAAAAx30BmAQDQgAoAAA=",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -198,7 +195,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA+3PQQqDQAyF4RxlTiCJM84cpwhqCbRTaHXj6RVx2V2lq//bPMjmvQzj5NVnf9Xb5I+xmft3c1/lUrrLKYlmtdLZkap23E9iKaYuW2ljEbXYFpOg1874bvnsL4cg/fD0+o9CAAAAAAAAAAAAAAAAAAB+twEu4Fx6ACgAAA==",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "Failed to extract [%s]".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -206,7 +203,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA+3PQQqDQAyF4RxlTiCJM84cpwhqCbRTaHXj6RVx2V2lq//bPMjmvQzj5NVnf9Xb5I+xmft3c1/lUrrLKYlmtdLZkap23E9iKaYuW2ljEbXYFpOg1874bvnsL4cg/fD0+o9CAAAAAAAAAAAAAAAAAAB+twEu4Fx6ACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "Failed to extract [%s]".formatted(PublishSbomConstants.DEFINITION_FILE_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -214,8 +211,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBQ1MzBkMTYxNTM0MzY3MDBgNDY2MDIwYFA+o6AzsoLQZ6WUGBITElNzOPHhYOLiDfzQFhML89t5v3kIMAywXdp1YPwvb5207z4FAwuGA/zZX9hMt7VWVfo8nTLWLvnr23uG/W5ucTtz67WO+6benXicmZye/T++SWzq/XffS3Zm205sa499uP27Mxwqx4UC5/8KH2YgaNgfLjKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFAxHAACM1AuaACgAAA==",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.DEFINITION_FILE_DIR_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -223,8 +219,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBQ1MzBkMTYxNTM0MzY3MDBgNDY2MDIwYFA+o6AzsoLQZ6WUGBITElNzOPHhYOLiDfzQFhML89t5v3kIMAywXdp1YPwvb5207z4FAwuGA/zZX9hMt7VWVfo8nTLWLvnr23uG/W5ucTtz67WO+6benXicmZye/T++SWzq/XffS3Zm205sa499uP27Mxwqx4UC5/8KH2YgaNgfLjKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFAxHAACM1AuaACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.DEFINITION_FILE_DIR_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -232,8 +227,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBQ3NjBkMTYxNTM0MzE3NzBgNDY2NDQwYFA+o6AzsoLQZ6WUGBITElNzOPHhYOLiDfzQFhML8958jVHMDT8lDmqaziRkO55RxaLF84s97fV4otjS75Wj+78eYZnsdTTPtjXhefqpyi/cJ9R3db1PVbM1eVfYtP+vfBTMcm5IpUr1tX3Kdnx7Ptf60Vedmu+lq2GdW+P+95XUvPXmPQoL9XR8EoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2BYAQDCKZBFACgAAA==",
                 SbomContentType.DEFINITION_FILE.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.DEFINITION_FILE_DIR_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -241,8 +235,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBQ3NjBkMTYxNTM0MzE3NzBgNDY2NDQwYFA+o6AzsoLQZ6WUGBITElNzOPHhYOLiDfzQFhML8958jVHMDT8lDmqaziRkO55RxaLF84s97fV4otjS75Wj+78eYZnsdTTPtjXhefqpyi/cJ9R3db1PVbM1eVfYtP+vfBTMcm5IpUr1tX3Kdnx7Ptf60Vedmu+lq2GdW+P+95XUvPXmPQoL9XR8EoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2BYAQDCKZBFACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.DEFINITION_FILE_DIR_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -250,7 +243,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBoCCDoYmxiamZkYGRIVCdobGRuTGDggF1nYEdlBYDvaygwJCYkpuZRw8LBxeQ7+aAMJjfnnPkanbgaX0ok5p34YjfFwvXAMWE5Rdu/bbu0N6+aPX/2y02ciqHLVw7Ve2emh61sXvCFFX6btHaqOfbfENvf5obUZeWPztqxU7T0qlPwm2Kv/zX/Wuu+rK9fIo1HxOKjQX3uAQ4ueoYNAbAt6NgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwfAAAG3yiYwAoAAA=",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.TRACE_DATA_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -258,7 +251,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBoCCDoYmxiamZkYGRIVCdobGRuTGDggF1nYEdlBYDvaygwJCYkpuZRw8LBxeQ7+aAMJjfnnPkanbgaX0ok5p34YjfFwvXAMWE5Rdu/bbu0N6+aPX/2y02ciqHLVw7Ve2emh61sXvCFFX6btHaqOfbfENvf5obUZeWPztqxU7T0qlPwm2Kv/zX/Wuu+rK9fIo1HxOKjQX3uAQ4ueoYNAbAt6MAHZQUJSanxqckliRCs74+9e0A5XFzU1Oc+R8I4PkfSAHzv5GxoSGDgin1nYIJRnj+HwWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFQxsAANXsljMAKAAA",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] doesn't exist or is not a regular file".formatted(PublishSbomConstants.TRACE_DATA_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -266,7 +259,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBoCCDoYmxiamZkYGRIVCdobGRuTGDggF1nYEdlBYDvaygwJCYkpuZRw8LBxeQ7+aAMJjfnnPkanbgaX0ok5p34YjfFwvXAMWE5Rdu/bbu0N6+aPX/2y02ciqHLVw7Ve2emh61sXvCFFX6btHaqOfbfENvf5obUZeWPztqxU7T0qlPwm2Kv/zX/Wuu+rK9fIo1HxOKjQX3uAQ4ueoYNAbAt6MAHZQUJSanxqckliTSJOuDAaH8DwTw/G9qaAbM/0ZGRqP5fxSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AUjAKCAADQziKZACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "Failed to extract [%s]".formatted(PublishSbomConstants.TRACE_DATA_TAR));
+                "publish sbom failed!");
     }
 
     @Test
@@ -274,8 +267,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBoCCDoYmxiamZkYGRIVCdobGRuTGDggF1nYEdlBYDvaygwJCYkpuZRw8LBxeQ7+aAMJjfnnPkanbgaX0ok5p34YjfFwvXAMWE5Rdu/bbu0N6+aPX/2y02ciqHLVw7Ve2emh61sXvCFFX6btHaqOfbfENvf5obUZeWPztqxU7T0qlPwm2Kv/zX/Wuu+rK9fIo1HxOKjQX3uAQ4ueoYNAbAt6MAHZQUJSanxqckliTSJOuDAcH8b2oOz/9mhubA/G9kZGI0mv/pAZDz/27eQw4CLBd0n1o9uFZR+zVCSbGhwf9/hJisgvDe6T0mJ33mPSqoNV61SN/W/em8vc/v1buee75z2srrM7bVPZl08dWPbMH3z7Nrt4i9flq293+yANyOuu+MKu52vKM5fhSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo4AGAACdzdOjACgAAA==",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.TRACE_DATA_DIR_NAME));
+                "publish sbom failed!");
     }
 
     @Test
@@ -283,8 +275,7 @@ public class PublishControllerTests {
         publishSbomContentErrorCommonFunc(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME,
                 "H4sIAAAAAAAAA0tJTcvMyyzJzM+LT8vMSdUrSSzSS69ioCowAAIzExMGAzMDQ3NTQzBtYGAIFgcBoCCDoYmxiamZkYGRIVCdobGRuTGDggF1nYEdlBYDvaygwJCYkpuZRw8LBxeQ7+aAMJjfnnPkanbgaX0ok5p34YjfFwvXAMWE5Rdu/bbu0N6+aPX/2y02ciqHLVw7Ve2emh61sXvCFFX6btHaqOfbfENvf5obUZeWPztqxU7T0qlPwm2Kv/zX/Wuu+rK9fIo1HxOKjQX3uAQ4ueoYNAbAt6MAHZQUJSanxqckliTSJOuDAeH8bwDP/+YgcUMjIyPz0fxPD4Cc/w35mh0EnC9anpI76FzW/nhBoMdEJc0TRfUCTqcYlYL+Xo8oSv6u+r4/89y8Msm3i8KCTxx/5u5V90X9c9VqXTbXlpOxzpsXvdarXTt/nrfmtM+vf/47roBq2f7bDOcvqKqOZv1RMApGwSgYBaNgFIyCUTAKRsEoGAWjYBSMglEwCkbBKBgFo2AUjIJRMApGwSgYBaNgFIwC6gEADz4FTAAoAAA=",
                 SbomContentType.SBOM_TRACER_DATA.getType(),
-                "[%s] directory doesn't exist or is not a directory".formatted(
-                        PublishSbomConstants.TRACE_DATA_DIR_NAME));
+                "publish sbom failed!");
     }
 
     private void publishSbomContentErrorCommonFunc(String productName, String sbomContent, String sbomContentType, String errorInfo) throws Exception {
@@ -402,7 +393,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("not allowed to add product with type [%s]".formatted(TestConstants.TEST_PRODUCT_TYPE + "wrong")));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test
@@ -420,7 +411,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string(containsString("invalid productType: %s, valid types:".formatted(req.getProductType()))));
+                .andExpect(content().string(containsString("failed to add product.")));
     }
 
     @Test
@@ -438,7 +429,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("product [%s] already exists".formatted(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME)));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test
@@ -456,7 +447,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string(containsString("invalid attribute keys, valid keys:")));
+                .andExpect(content().string(containsString("failed to add product.")));
     }
 
     @Test
@@ -474,7 +465,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("there exists blank values or labels in attribute"));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test
@@ -492,7 +483,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("the label of value [4] already exists, it is [4], not [5]"));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test
@@ -510,7 +501,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("the value of label [4] already exists, it is [4], not [5]"));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test
@@ -528,8 +519,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("product with attribute [%s] already exists, its name is [%s]"
-                        .formatted(req.getAttribute(), TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME)));
+                .andExpect(content().string("failed to add product."));
     }
 
     @Test

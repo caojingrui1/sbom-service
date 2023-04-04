@@ -69,7 +69,7 @@ public class StatisticsControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("product statistics of mindsporeTestError doesn't exist")));
+                .andExpect(content().string(containsString("product statistics doesn't exist")));
     }
 
     @Test
@@ -80,7 +80,7 @@ public class StatisticsControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("product statistics of /openEuler-22.03-LTS/update/x86_64 doesn't exist")));
+                .andExpect(content().string(containsString("product statistics doesn't exist")));
     }
 
     @Test

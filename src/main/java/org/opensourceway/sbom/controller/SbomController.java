@@ -83,11 +83,6 @@ public class SbomController {
         UUID taskId;
         try {
             taskId = sbomService.publishSbom(publishSbomRequest);
-        } catch (RuntimeException e) {
-            logger.error("publish sbom failed", e);
-            response.setSuccess(Boolean.FALSE);
-            response.setErrorInfo(e.getMessage());
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
         } catch (Exception e) {
             logger.error("publish sbom failed", e);
             response.setSuccess(Boolean.FALSE);
@@ -132,7 +127,7 @@ public class SbomController {
             sbomService.readSbomFile(productName, fileName, file.getBytes());
         } catch (Exception e) {
             logger.error("uploadSbomFile failed", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("uploadSbomFile failed");
         }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Success");
@@ -153,7 +148,7 @@ public class SbomController {
             rawSbom = sbomService.writeSbomFile(productName, spec, specVersion, format);
         } catch (Exception e) {
             logger.error("exportSbomFile failed", e);
-            errorMsg = e.getMessage();
+            errorMsg = "exportSbomFile failed";
         }
 
         response.reset();
@@ -212,7 +207,7 @@ public class SbomController {
             sbom = sbomService.writeSbom(productName, spec, specVersion, format);
         } catch (Exception e) {
             logger.error("export sbom metadata failed", e);
-            errorMsg = e.getMessage();
+            errorMsg = "export sbom metadata failed";
         }
 
         response.reset();
@@ -306,12 +301,12 @@ public class SbomController {
             packageInfo = sbomService.queryPackageInfoById(packageId);
         } catch (RuntimeException e) {
             logger.error("query sbom package error:", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query sbom package error");
         }
 
         logger.info("query sbom package result:{}", packageInfo);
         if (packageInfo == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("packageId:%s is not exist".formatted(packageId));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("the queried package doesn't exist");
         }
         return ResponseEntity.status(HttpStatus.OK).body(packageInfo);
     }
@@ -359,9 +354,6 @@ public class SbomController {
             Pageable pageable = PageRequest.of(page, size);
 
             queryResult = sbomService.queryPackageInfoByBinaryViaSpec(condition, pageable);
-        } catch (RuntimeException e) {
-            logger.error("query sbom packages failed.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query sbom packages failed.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query sbom packages failed.");
@@ -378,9 +370,6 @@ public class SbomController {
 
         try {
             queryResult = sbomService.queryProductType();
-        } catch (RuntimeException e) {
-            logger.error("query product type failed.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query product type failed.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query product type failed.");
@@ -397,9 +386,6 @@ public class SbomController {
 
         try {
             queryResult = sbomService.queryProductConfigByProductType(productType);
-        } catch (RuntimeException e) {
-            logger.error("query product config failed.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query product config failed.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query product config failed.");
@@ -425,9 +411,6 @@ public class SbomController {
                 logger.info("query product info result:{}", queryResult);
                 return ResponseEntity.status(HttpStatus.OK).body(queryResult);
             }
-        } catch (RuntimeException e) {
-            logger.error("query product info failed.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query product info failed.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query product info failed.");
@@ -445,9 +428,6 @@ public class SbomController {
         Pageable pageable = PageRequest.of(page, size);
         try {
             vulnerabilities = sbomService.queryPackageVulnerability(packageId, severity, vulId, pageable);
-        } catch (RuntimeException e) {
-            logger.error("query package vulnerability error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query package vulnerability error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query package vulnerability error");
@@ -485,9 +465,6 @@ public class SbomController {
             copyrights = sbomService.queryCopyrightByPackageId(packageId);
             licenseAndCopyright.put("licenseContent", licenses);
             licenseAndCopyright.put("copyrightContent", copyrights);
-        } catch (RuntimeException e) {
-            logger.error("query package license error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query package license error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query package license error");
@@ -510,7 +487,7 @@ public class SbomController {
             sbomService.persistSbomFromTraceData(productName, fileName, file.getInputStream());
         } catch (Exception e) {
             logger.error("failed to uploadSbomTraceData", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("failed to uploadSbomTraceData");
         }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Success");
@@ -523,16 +500,13 @@ public class SbomController {
         ProductStatistics productStatistics;
         try {
             productStatistics = sbomService.queryProductStatistics(productName);
-        } catch (RuntimeException e) {
-            logger.error("query product statistics error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query product statistics error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query product statistics error");
         }
 
         if (Objects.isNull(productStatistics)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product statistics of %s doesn't exist".formatted(productName));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("product statistics doesn't exist");
         }
 
         logger.info("query product statistics result: {}", productStatistics);
@@ -548,9 +522,6 @@ public class SbomController {
         List<VulCountVo> vulCountVos;
         try {
             vulCountVos = sbomService.queryProductVulTrend(productName, startTimestamp, endTimestamp);
-        } catch (RuntimeException e) {
-            logger.error("query product vulnerability trend error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query product vulnerability trend error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query product vulnerability trend error");
@@ -566,16 +537,13 @@ public class SbomController {
         PackageStatisticsVo vo;
         try {
             vo = sbomService.queryPackageStatisticsByPackageId(packageId);
-        } catch (RuntimeException e) {
-            logger.error("query package statistics error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query package statistics error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query package statistics error");
         }
 
         if (Objects.isNull(vo)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("package %s doesn't exist".formatted(packageId));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("the queried package doesn't exist");
         }
 
         logger.info("query package statistics result: {}", vo);
@@ -624,9 +592,6 @@ public class SbomController {
         Pageable pageable = PageRequest.of(page, size);
         try {
             vulnerabilities = sbomService.queryVulnerability(productName, packageId, severity, vulId, pageable);
-        } catch (RuntimeException e) {
-            logger.error("query vulnerability error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query vulnerability error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("query vulnerability error");
@@ -644,9 +609,6 @@ public class SbomController {
         Graph graph;
         try {
             graph = sbomService.queryVulImpact(productName, vulId);
-        } catch (RuntimeException e) {
-            logger.error("queryVulImpact error: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("queryVulImpact error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("queryVulImpact error");
@@ -662,9 +624,6 @@ public class SbomController {
         UpstreamAndPatchInfoResponse response;
         try {
             response = repoService.queryUpstreamAndPatchInfo(packageId);
-        } catch (RuntimeException e) {
-            logger.error("query upstream and patch info by packageId:{}, error:", packageId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("query upstream and patch info by packageId:{}, error:", packageId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("queryUpstreamAndPatchInfo error");
@@ -685,9 +644,6 @@ public class SbomController {
             sbomService.addProduct(addProductRequest);
             logger.info("successfully add product: {}", addProductRequest.getProductName());
             return ResponseEntity.status(HttpStatus.OK).body("Success");
-        } catch (RuntimeException e) {
-            logger.error("failed to add product.", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("failed to add product.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("failed to add product.");

@@ -21,15 +21,7 @@ public class FileUtil {
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     public static void extractTarGzipArchive(String file, String targetDir) throws IOException {
-        logger.info("extract '{}' to '{}'", file, targetDir);
-        try (FileInputStream fis = new FileInputStream(Paths.get(file).toFile());
-             BufferedInputStream bis = new BufferedInputStream(fis);
-             GzipCompressorInputStream gis = new GzipCompressorInputStream(bis);
-             TarArchiveInputStream tar = new TarArchiveInputStream(gis)) {
-
-            extractTarArchiveInputStream(tar, targetDir);
-        }
-        logger.info("successfully extracted '{}' to '{}'", file, targetDir);
+        extractTarGzipArchive(Paths.get(file), targetDir);
     }
 
     public static void extractTarGzipArchive(Path path, String targetDir) throws IOException {
@@ -63,6 +55,9 @@ public class FileUtil {
                 continue;
             }
             File f = Paths.get(targetDir, entry.getName()).toFile();
+            if (!f.toPath().normalize().startsWith(Paths.get(targetDir))) {
+                throw new IOException("Bad tar entry: %s".formatted(f));
+            }
             if (entry.isDirectory()) {
                 ensureDirExists(f);
             } else {

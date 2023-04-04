@@ -62,7 +62,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("can't find mindsporeTest.iso's product metadata")));
+                .andExpect(content().string(containsString("exportSbomFile failed")));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("sbom file specification: spdx - 2.3 is not support"));
+                .andExpect(content().string("exportSbomFile failed"));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("can't find")));
+                .andExpect(content().string(containsString("export sbom metadata failed")));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("can't find")));
+                .andExpect(content().string(containsString("export sbom metadata failed")));
     }
 
 
@@ -138,7 +138,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("sbom file specification: spdx - 2.3 is not support"));
+                .andExpect(content().string("export sbom metadata failed"));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string("sbom file specification: cyclonedx - 1.5 is not support"));
+                .andExpect(content().string("export sbom metadata failed"));
     }
 
     @Test
