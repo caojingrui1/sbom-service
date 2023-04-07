@@ -6,9 +6,6 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
 }
 
-group = "org.opensourceway.sbom"
-version = "1.0-SNAPSHOT"
-
 val commonsIoVersion: String by project
 val commonsLang3Version: String by project
 val commonsCollections4Version: String by project
