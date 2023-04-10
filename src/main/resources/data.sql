@@ -62,7 +62,8 @@ VALUES
 ('2db9d338-6759-4b8b-95a4-cda6a8c11b1c', 'openEuler-22.03-LTS', 'openEuler-22.03-LTS', '013d61a1-5938-46db-9092-88df47c10bf6'),
 ('bcf54a11-c8b6-42ca-8978-bf08ffe80320', 'openEuler-20.03-LTS-SP1', 'openEuler-20.03-LTS-SP1', '013d61a1-5938-46db-9092-88df47c10bf6'),
 ('7ded4e5d-2b3e-44a4-bbbf-07d582e5d471', 'openEuler-20.03-LTS-SP2', 'openEuler-20.03-LTS-SP2', '013d61a1-5938-46db-9092-88df47c10bf6'),
-('cd516d5f-158a-4bd5-85d3-231b0dd7790a', 'openEuler-20.03-LTS-SP3', 'openEuler-20.03-LTS-SP3','013d61a1-5938-46db-9092-88df47c10bf6')
+('cd516d5f-158a-4bd5-85d3-231b0dd7790a', 'openEuler-20.03-LTS-SP3', 'openEuler-20.03-LTS-SP3','013d61a1-5938-46db-9092-88df47c10bf6'),
+('84791ba8-5717-43f4-9f2e-073c7f14e21d', 'openEuler-23.03', 'openEuler-23.03','013d61a1-5938-46db-9092-88df47c10bf6')
 ON CONFLICT (id) DO UPDATE
     SET value = EXCLUDED.value, label = EXCLUDED.label, product_config_id = EXCLUDED.product_config_id;
 
@@ -189,7 +190,11 @@ VALUES
 ('d22c6135-1506-4c29-bbc3-167f94fdb38d', '/openEuler-20.03-LTS-SP1/update/aarch64', '{"productType":"openEuler", "version":"openEuler-20.03-LTS-SP1","imageFormat":"ISO","imageType":"Update","arch":"aarch64"}'::jsonb),
 ('b127e9ad-42ca-46c5-8777-9cd946de0e0a', '/openEuler-20.03-LTS-SP1/update/x86_64', '{"productType":"openEuler", "version":"openEuler-20.03-LTS-SP1","imageFormat":"ISO","imageType":"Update","arch":"x86_64"}'::jsonb),
 ('e50d0398-2516-4ab4-88d6-9199662a710a', '/openEuler-20.03-LTS-SP1/EPOL/update/aarch64', '{"productType":"openEuler", "version":"openEuler-20.03-LTS-SP1","imageFormat":"EPOL","imageType":"Update","arch":"aarch64"}'::jsonb),
-('ae05237c-9d45-4fe0-afe3-a5fbf7004686', '/openEuler-20.03-LTS-SP1/EPOL/update/x86_64', '{"productType":"openEuler", "version":"openEuler-20.03-LTS-SP1","imageFormat":"EPOL","imageType":"Update","arch":"x86_64"}'::jsonb)
+('ae05237c-9d45-4fe0-afe3-a5fbf7004686', '/openEuler-20.03-LTS-SP1/EPOL/update/x86_64', '{"productType":"openEuler", "version":"openEuler-20.03-LTS-SP1","imageFormat":"EPOL","imageType":"Update","arch":"x86_64"}'::jsonb),
+('aa537540-a688-4d68-8116-3fb59059147d', 'openEuler-23.03-x86_64-dvd.iso', '{"productType":"openEuler", "version":"openEuler-23.03","imageFormat":"ISO","imageType":"Normal","arch":"x86_64"}'::jsonb),
+('0174d985-9b22-4227-8cf2-7f8fb5d1e805', 'openEuler-23.03-everything-x86_64-dvd.iso', '{"productType":"openEuler", "version":"openEuler-23.03","imageFormat":"ISO","imageType":"Everything","arch":"x86_64"}'::jsonb),
+('bfeec2d2-0e14-41bc-8e88-9564e0dc1f58', 'openEuler-23.03-aarch64-dvd.iso', '{"productType":"openEuler", "version":"openEuler-23.03","imageFormat":"ISO","imageType":"Normal","arch":"aarch64"}'::jsonb),
+('deaa4a26-490d-4a5a-bfe8-cc8483bf1cbb', 'openEuler-23.03-everything-aarch64-dvd.iso', '{"productType":"openEuler", "version":"openEuler-23.03","imageFormat":"ISO","imageType":"Everything","arch":"aarch64"}'::jsonb)
 ON CONFLICT (id) DO UPDATE
     SET name = EXCLUDED.name, attribute = EXCLUDED.attribute;
 
