@@ -1,3 +1,9 @@
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://raw.githubusercontent.com/opensourceways/sbom-service/main/LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/opensourceways/sbom-service/badge)](https://api.securityscorecards.dev/projects/github.com/opensourceways/sbom-service)
+[![CodeQL](https://github.com/opensourceways/sbom-service/actions/workflows/codeql.yml/badge.svg)](https://github.com/opensourceways/sbom-service/actions/workflows/codeql.yml)
+[![Java CI with Gradle](https://github.com/opensourceways/sbom-service/actions/workflows/gradle.yml/badge.svg)](https://github.com/opensourceways/sbom-service/actions/workflows/gradle.yml)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+
 # sbom-service
 
 * 一、[SBOM介绍](doc/sbom/whatIsSbom.md)
