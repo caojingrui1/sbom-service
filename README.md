@@ -3,6 +3,7 @@
 [![CodeQL](https://github.com/opensourceways/sbom-service/actions/workflows/codeql.yml/badge.svg)](https://github.com/opensourceways/sbom-service/actions/workflows/codeql.yml)
 [![Java CI with Gradle](https://github.com/opensourceways/sbom-service/actions/workflows/gradle.yml/badge.svg)](https://github.com/opensourceways/sbom-service/actions/workflows/gradle.yml)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://slsa.dev)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 
 # sbom-service
 
