@@ -50,7 +50,7 @@ public class RepoMetaLicenseCache {
         return CacheProperties.builder()
                 .cacheName(CacheConstants.REPO_META_LICENSE_CACHE_NAME)
                 .maximumCacheSize(5000L)
-                .expireAfterAccess(60L * 60L)// 1h
+                .expireAfterWrite(60L * 60L)// 1h
                 .cacheNullValue(true)
                 .build();
     }
