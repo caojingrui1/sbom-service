@@ -43,7 +43,7 @@ jobs:
 
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@03bee3930647ebbf994244c21ddbc0d4933aab4f # v2.3.0
+      uses: step-security/harden-runner@128a63446a954579617e875aaab7d2978154e969 # v2.4.0
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
@@ -60,7 +60,7 @@ jobs:
         
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@7df0ce34898d659f95c0c4a09eaa8d4e32ee64db # v2.2.12
+      uses: github/codeql-action/init@29b1f65c5e92e24fe6b6647da1eaabe529cec70f # v2.3.3
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -75,11 +75,11 @@ jobs:
       run: chmod +x ./gradlew
         
     - name: Build with Gradle
-      uses: gradle/gradle-build-action@5056fa9d50478a14af3c9925c12ca02318659d3e
+      uses: gradle/gradle-build-action@d23c38fad3e837961b39af2b98b046694927aca4
       with:
         arguments: -Dorg.gradle.jvmargs=-Xmx2g -Dkotlin.daemon.jvm.options="-Xmx1g" bootWar
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@7df0ce34898d659f95c0c4a09eaa8d4e32ee64db # v2.2.12
+      uses: github/codeql-action/analyze@29b1f65c5e92e24fe6b6647da1eaabe529cec70f # v2.3.3
       with:
         category: "/language:${{matrix.language}}"
