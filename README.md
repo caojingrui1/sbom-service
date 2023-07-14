@@ -30,3 +30,6 @@
   13. [制品发布](doc/api/制品发布.md)
   14. [查询制品发布结果](doc/api/查询制品发布结果.md)
   15. [新增制品元数据](doc/api/新增制品元数据.md)
+
+# Copyright
+Copyright © Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
