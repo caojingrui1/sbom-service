@@ -7,11 +7,11 @@ CREATE INDEX IF NOT EXISTS external_purl_ref_purl_idx ON external_purl_ref USING
 ALTER TABLE product_config DROP COLUMN IF EXISTS value_type;
 
 -- Init table product_type
-INSERT INTO product_type VALUES
-('openEuler'),
-('MindSpore'),
-('openGauss'),
-('OpenHarmony')
+INSERT INTO product_type(type, active) VALUES
+('openEuler', true),
+('MindSpore', true),
+('openGauss', true),
+('OpenHarmony', true)
 ON CONFLICT (type) DO NOTHING;
 
 -- Init table product_config

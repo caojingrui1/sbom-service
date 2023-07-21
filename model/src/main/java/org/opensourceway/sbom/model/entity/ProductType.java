@@ -10,13 +10,16 @@ import javax.persistence.OneToMany;
 import java.util.List;
 
 /**
- * Product type, must be openeuler/mindspore/opengauss
+ * Product type
  */
 @Entity
 public class ProductType {
     @Id
     @Column(columnDefinition = "TEXT", nullable = false)
     private String type;
+
+    @Column
+    private Boolean active;
 
     /**
      * Product configs of a product type.
@@ -31,6 +34,14 @@ public class ProductType {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public List<ProductConfig> getProductConfigs() {

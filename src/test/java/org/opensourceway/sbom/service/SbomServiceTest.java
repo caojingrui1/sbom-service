@@ -294,6 +294,7 @@ class SbomServiceTest {
     public void queryProductType() {
         ProductType productType = new ProductType();
         productType.setType("test_type_1");
+        productType.setActive(true);
         ProductType ret = productTypeRepository.save(productType);
 
         List<String> productTypes = sbomService.queryProductType();

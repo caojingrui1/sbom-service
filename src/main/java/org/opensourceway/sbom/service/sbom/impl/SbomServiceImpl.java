@@ -465,7 +465,9 @@ public class SbomServiceImpl implements SbomService {
 
     @Override
     public List<String> queryProductType() {
-        return productTypeRepository.findAll().stream().map(ProductType::getType).toList();
+        return productTypeRepository.findAll().stream()
+                .filter(it -> Objects.nonNull(it.getActive()) && it.getActive())
+                .map(ProductType::getType).toList();
     }
 
     @Override
