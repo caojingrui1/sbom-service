@@ -13,7 +13,7 @@ ARG PUBLIC_PASSWORD
 RUN git clone https://$PUBLIC_USER:$PUBLIC_PASSWORD@github.com/Open-Infra-Ops/plugins  /opt/plugins \
     && cp /opt/plugins/armorrasp/rasp.tgz /opt \
     && chown -R root:root /opt/rasp.tgz && chmod 755 -R /opt/rasp.tgz \
-    && tar zxf /opt/rasp.tgz \
+    && tar -zxf /opt/rasp.tgz \
     && rm -rf /opt/plugins 
 
 WORKDIR /opt
