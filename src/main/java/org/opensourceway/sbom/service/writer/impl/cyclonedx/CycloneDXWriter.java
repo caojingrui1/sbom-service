@@ -159,10 +159,14 @@ public class CycloneDXWriter implements SbomWriter {
         setExternalReferenceAndComponents(pkg, component);
         component.setLicenses(List.of(new License(pkg.getLicenseConcluded())));
         PackageUrlVo purlVo = pkg.getExternalPurlRefs().stream()
-                .filter(externalPurlRef -> externalPurlRef.getCategory().equals(ReferenceCategory.PACKAGE_MANAGER.toString())).map(ExternalPurlRef::getPurl).toList().get(0);
+                .filter(externalPurlRef -> externalPurlRef.getCategory().equals(ReferenceCategory.PACKAGE_MANAGER.toString()))
+                .map(ExternalPurlRef::getPurl)
+                .findAny().orElse(null);
 
-        setPurl(purlVo, component);
-        component.setGroup(purlVo.getNamespace());
+        if (Objects.nonNull(purlVo)) {
+            setPurl(purlVo, component);
+            component.setGroup(purlVo.getNamespace());
+        }
         component.setVersion(pkg.getVersion());
         component.setType(ComponentType.LIBRARY);
         component.setBomRef(pkg.getSpdxId());

@@ -2,6 +2,7 @@ package org.opensourceway.sbom.service.sbom.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.apache.commons.lang3.StringUtils;
 import org.opensourceway.sbom.analyzer.TraceDataAnalyzer;
 import org.opensourceway.sbom.api.reader.SbomReader;
@@ -66,6 +67,7 @@ import org.opensourceway.sbom.utils.PublishSbomRequestValidator;
 import org.opensourceway.sbom.utils.PurlUtil;
 import org.opensourceway.sbom.utils.SbomApplicationContextHolder;
 import org.opensourceway.sbom.utils.SbomMapperUtil;
+import org.opensourceway.sbom.utils.SignatureUtil;
 import org.opensourceway.sbom.utils.UrlUtil;
 import org.opensourceway.sbom.utils.VersionUtil;
 import org.slf4j.Logger;
@@ -84,9 +86,11 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -142,6 +146,9 @@ public class SbomServiceImpl implements SbomService {
 
     @Autowired
     private ProductConfigCache productConfigCache;
+
+    @Autowired
+    private SignatureUtil signatureUtil;
 
     @Value("${sbom.service.website.domain}")
     private String sbomWebsiteDomain;
@@ -727,7 +734,7 @@ public class SbomServiceImpl implements SbomService {
 
     @Override
     public byte[] writePackageSbom(String productName, String pkgName, String pkgVersion,
-                                   String spec, String specVersion, String format) throws IOException {
+            String spec, String specVersion, String format) throws IOException {
         format = StringUtils.lowerCase(format);
         spec = StringUtils.lowerCase(spec);
 
@@ -763,7 +770,7 @@ public class SbomServiceImpl implements SbomService {
         Sbom sbom = sbomRepository.findByProductName(productName)
                 .orElseThrow(() -> new RuntimeException("can't find %s's sbom metadata".formatted(productName)));
         var nameToSbom = sbom.getPackages().stream().collect(Collectors.toMap(
-                pkg -> "%s-%s-%s-%s-sbom.%s".formatted(productName.replace("/", "_").replace("\\", "_"),
+                pkg -> "%s-%s-%s-%s-sbom.%s".formatted(URLEncoder.encode(productName, StandardCharsets.UTF_8),
                         pkg.getName(), pkg.getVersion(), spec, format),
                 pkg -> {
                     try {
@@ -773,5 +780,20 @@ public class SbomServiceImpl implements SbomService {
                     }
                 }));
         return FileUtil.tarBytes(nameToSbom);
+    }
+
+    @Override
+    public byte[] generateVerificationAndTar(String sbomFilename, byte[] sbomContent) throws IOException {
+        Map<String, byte[]> nameToData = new HashMap<>();
+        nameToData.put(sbomFilename, sbomContent);
+        nameToData.put("%s.sha256".formatted(sbomFilename),
+                Hashing.sha256().hashBytes(sbomContent).toString().getBytes(StandardCharsets.UTF_8));
+
+        SignatureUtil.SignFile signFile = signatureUtil.sign(sbomFilename, sbomContent);
+        if (Objects.nonNull(signFile)) {
+            nameToData.put(signFile.getFilename(), signFile.getContent());
+        }
+
+        return FileUtil.tarBytes(nameToData);
     }
 }

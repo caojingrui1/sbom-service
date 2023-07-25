@@ -23,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,9 +63,9 @@ public class TestCommon {
         assertThat(pkg.getVersionInfo()).isEqualTo("20210324.2");
 
         SpdxRelationship relationship = spdxDocument.getRelationships().get(0);
-        assertThat(relationship.spdxElementId()).isEqualTo("SPDXRef-Package-PyPI-asttokens-2.0.5");
+        assertThat(relationship.spdxElementId()).isEqualTo("SPDXRef-Package-PyPI-scipy-1.7.3");
         assertThat(relationship.relationshipType().name()).isEqualTo(RelationshipType.DEPENDS_ON.name());
-        assertThat(relationship.relatedSpdxElement()).isEqualTo("SPDXRef-Package-PyPI-six-1.16.0");
+        assertThat(relationship.relatedSpdxElement()).isEqualTo("SPDXRef-Package-PyPI-numpy-1.21.6");
     }
 
     public static void assertCycloneDXDocument(CycloneDXDocument cycloneDXDocument) {
@@ -147,5 +150,11 @@ public class TestCommon {
         if (existRawSbom != null) {
             rawSbomRepository.delete(existRawSbom);
         }
+    }
+
+    public static String extractSbomFromTar(byte[] tarBytes, String filename) throws IOException {
+        var tmpDirPath = Files.createTempDirectory("test");
+        FileUtil.extractTarGzipArchive(new ByteArrayInputStream(tarBytes), tmpDirPath.toString());
+        return Files.readString(tmpDirPath.resolve(filename));
     }
 }

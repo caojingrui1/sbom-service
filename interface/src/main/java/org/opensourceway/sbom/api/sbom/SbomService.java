@@ -85,4 +85,6 @@ public interface SbomService {
                             String spec, String specVersion, String format) throws IOException;
 
     byte[] writeAllPackageSbom(String productName, String spec, String specVersion, String format) throws IOException;
+
+    byte[] generateVerificationAndTar(String sbomFilename, byte[] sbomContent) throws IOException;
 }
