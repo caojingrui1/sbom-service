@@ -22,3 +22,4 @@ WORKDIR /opt/sbom-service
 RUN /bin/bash gradlew bootWar
 
 ENTRYPOINT ["/bin/bash", "/opt/sbom-service/docker-entrypoint.sh"]
+
