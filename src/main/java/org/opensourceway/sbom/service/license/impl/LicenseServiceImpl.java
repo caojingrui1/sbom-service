@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Qualifier("LicenseServiceImpl")
@@ -151,7 +152,7 @@ public class LicenseServiceImpl implements LicenseService {
             return (PurlUtil.canonicalizePurl(PurlUtil.newPackageURL(packageUrlVo.getType(), packageUrlVo.getNamespace(),
                     packageUrlVo.getName(), packageUrlVo.getVersion(), null, null)));
         } else {
-            var version = packageUrlVo.getQualifiers().getOrDefault(
+            var version = Objects.isNull(packageUrlVo.getQualifiers()) ? packageUrlVo.getVersion() : packageUrlVo.getQualifiers().getOrDefault(
                     SbomRepoConstants.OPEN_HARMONY_PURL_QUALIFIER_REVISION, packageUrlVo.getVersion());
             return (PurlUtil.canonicalizePurl(PurlUtil.newPackageURL(packageUrlVo.getType(), packageUrlVo.getNamespace(),
                     packageUrlVo.getName(), version, null, null)));
