@@ -8,6 +8,7 @@ import org.opensourceway.sbom.model.echarts.Graph;
 import org.opensourceway.sbom.model.entity.Package;
 import org.opensourceway.sbom.model.entity.Product;
 import org.opensourceway.sbom.model.entity.ProductStatistics;
+import org.opensourceway.sbom.model.exception.AddProductException;
 import org.opensourceway.sbom.model.pojo.request.sbom.AddProductRequest;
 import org.opensourceway.sbom.model.pojo.request.sbom.PublishSbomRequest;
 import org.opensourceway.sbom.model.pojo.request.sbom.QuerySbomPackagesRequest;
@@ -570,6 +571,9 @@ public class SbomController {
             sbomService.addProduct(addProductRequest);
             logger.info("successfully add product: {}", addProductRequest.getProductName());
             return ResponseEntity.status(HttpStatus.OK).body("Success");
+        } catch (AddProductException e) {
+            logger.error("failed to add product.", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             logger.error("failed to add product.", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("failed to add product.");
