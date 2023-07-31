@@ -10,15 +10,6 @@ RUN yum update -y && yum install -y \
 WORKDIR /opt
 RUN git clone --recurse-submodules https://github.com/opensourceways/sbom-service.git
 WORKDIR /opt/sbom-service
-RUN /bin/bash gradlew bootWar
-
-#install RASP
-ARG PUBLIC_USER
-ARG PUBLIC_PASSWORD
-RUN git clone https://$PUBLIC_USER:$PUBLIC_PASSWORD@github.com/Open-Infra-Ops/plugins \
-    && cp plugins/armorrasp/rasp.tgz . \
-    && tar -zxf rasp.tgz \
-    && chown -R root:root rasp && chmod 755 -R rasp \
-    && rm -rf plugins  
+RUN /bin/bash gradlew bootWar  
 
 ENTRYPOINT ["/bin/bash", "/opt/sbom-service/docker-entrypoint.sh"]
