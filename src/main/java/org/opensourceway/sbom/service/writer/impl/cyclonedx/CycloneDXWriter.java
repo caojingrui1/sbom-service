@@ -24,21 +24,16 @@ import org.opensourceway.sbom.model.cyclonedx.Property;
 import org.opensourceway.sbom.model.cyclonedx.Rating;
 import org.opensourceway.sbom.model.cyclonedx.Supplier;
 import org.opensourceway.sbom.model.cyclonedx.Tool;
-import org.opensourceway.sbom.model.cyclonedx.Vulnerability;
-import org.opensourceway.sbom.model.cyclonedx.VulnerabilityAffect;
 import org.opensourceway.sbom.model.cyclonedx.VulnerabilityMethod;
 import org.opensourceway.sbom.model.cyclonedx.VulnerabilitySeverity;
-import org.opensourceway.sbom.model.cyclonedx.VulnerabilitySource;
 import org.opensourceway.sbom.model.entity.Checksum;
 import org.opensourceway.sbom.model.entity.ExternalPurlRef;
-import org.opensourceway.sbom.model.entity.ExternalVulRef;
 import org.opensourceway.sbom.model.entity.File;
 import org.opensourceway.sbom.model.entity.Package;
 import org.opensourceway.sbom.model.entity.Product;
 import org.opensourceway.sbom.model.entity.Sbom;
 import org.opensourceway.sbom.model.entity.SbomCreator;
 import org.opensourceway.sbom.model.entity.SbomElementRelationship;
-import org.opensourceway.sbom.model.entity.VulReference;
 import org.opensourceway.sbom.model.entity.VulScore;
 import org.opensourceway.sbom.model.enums.SbomFormat;
 import org.opensourceway.sbom.model.pojo.vo.sbom.PackageUrlVo;
@@ -100,7 +95,6 @@ public class CycloneDXWriter implements SbomWriter {
         setMetadata(sbom, document);
         setComponents(sbom, document);
         setDependencies(sbom, document);
-        setVulnerabilities(sbom, document);
 
         return SbomMapperUtil.writeAsBytes(document, format);
     }
@@ -159,10 +153,14 @@ public class CycloneDXWriter implements SbomWriter {
         setExternalReferenceAndComponents(pkg, component);
         component.setLicenses(List.of(new License(pkg.getLicenseConcluded())));
         PackageUrlVo purlVo = pkg.getExternalPurlRefs().stream()
-                .filter(externalPurlRef -> externalPurlRef.getCategory().equals(ReferenceCategory.PACKAGE_MANAGER.toString())).map(ExternalPurlRef::getPurl).toList().get(0);
+                .filter(externalPurlRef -> externalPurlRef.getCategory().equals(ReferenceCategory.PACKAGE_MANAGER.toString()))
+                .map(ExternalPurlRef::getPurl)
+                .findAny().orElse(null);
 
-        setPurl(purlVo, component);
-        component.setGroup(purlVo.getNamespace());
+        if (Objects.nonNull(purlVo)) {
+            setPurl(purlVo, component);
+            component.setGroup(purlVo.getNamespace());
+        }
         component.setVersion(pkg.getVersion());
         component.setType(ComponentType.LIBRARY);
         component.setBomRef(pkg.getSpdxId());
@@ -313,39 +311,6 @@ public class CycloneDXWriter implements SbomWriter {
             dependencies.add(dependency);
         }
         document.setDependencies(dependencies);
-    }
-
-    protected void setVulnerabilities(Sbom sbom, CycloneDXDocument document) {
-        List<Vulnerability> vulnerabilities = new ArrayList<>();
-        List<Package> packages = sbom.getPackages();
-        Map<ExternalVulRef, List<VulnerabilityAffect>> vulPackageMap = new HashMap<>();
-        for (Package pkg : packages) {
-            List<ExternalVulRef> externalVulRefs = pkg.getExternalVulRefs();
-            for (ExternalVulRef externalVulRef : externalVulRefs) {
-                if (vulPackageMap.containsKey(externalVulRef)) {
-                    vulPackageMap.get(externalVulRef).add(new VulnerabilityAffect(pkg.getSpdxId()));
-                } else {
-                    vulPackageMap.put(externalVulRef, new ArrayList<>(Collections.singletonList(new VulnerabilityAffect(pkg.getSpdxId()))));
-                }
-            }
-        }
-
-        for (ExternalVulRef externalVulRef : vulPackageMap.keySet()) {
-            Vulnerability vulnerability = new Vulnerability();
-            vulnerability.setId(externalVulRef.getVulnerability().getVulId());
-            List<VulScore> vulScores = externalVulRef.getVulnerability().getVulScores();
-            vulnerability.setRatings(vulScores.stream().map(this::transformVulRatings).toList());
-            vulnerability.setAffects(vulPackageMap.get(externalVulRef));
-
-            List<VulReference> vulReferences = externalVulRef.getVulnerability().getVulReferences();
-            if (ObjectUtils.isNotEmpty(vulReferences)) {
-                VulReference vulReference = vulReferences.get(0);
-                VulnerabilitySource source = new VulnerabilitySource(vulReference.getUrl(), vulReference.getSource());
-                vulnerability.setSource(source);
-            }
-            vulnerabilities.add(vulnerability);
-        }
-        document.setVulnerabilities(vulnerabilities);
     }
 
     private Rating transformVulRatings(VulScore vulScore) {

@@ -393,7 +393,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("not allowed to add product with type [%s]".formatted(TestConstants.TEST_PRODUCT_TYPE + "wrong")));
     }
 
     @Test
@@ -411,7 +411,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string(containsString("failed to add product.")));
+                .andExpect(content().string(containsString("invalid productType: %s, valid types:".formatted(req.getProductType()))));
     }
 
     @Test
@@ -429,7 +429,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("product [%s] already exists".formatted(TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME)));
     }
 
     @Test
@@ -447,7 +447,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string(containsString("failed to add product.")));
+                .andExpect(content().string(containsString("invalid attribute keys, valid keys:")));
     }
 
     @Test
@@ -465,7 +465,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("there exists blank values or labels in attribute"));
     }
 
     @Test
@@ -483,7 +483,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("the label of value [4] already exists, it is [4], not [5]"));
     }
 
     @Test
@@ -501,7 +501,7 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("the value of label [4] already exists, it is [4], not [5]"));
     }
 
     @Test
@@ -519,7 +519,8 @@ public class PublishControllerTests {
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(content().string("failed to add product."));
+                .andExpect(content().string("product with attribute [%s] already exists, its name is [%s]"
+                        .formatted(req.getAttribute(), TestConstants.PUBLISH_SAMPLE_PRODUCT_NAME)));
     }
 
     @Test

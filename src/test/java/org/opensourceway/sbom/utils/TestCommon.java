@@ -9,9 +9,6 @@ import org.opensourceway.sbom.model.cyclonedx.Dependency;
 import org.opensourceway.sbom.model.cyclonedx.ExternalReference;
 import org.opensourceway.sbom.model.cyclonedx.ExternalReferenceType;
 import org.opensourceway.sbom.model.cyclonedx.Property;
-import org.opensourceway.sbom.model.cyclonedx.Vulnerability;
-import org.opensourceway.sbom.model.cyclonedx.VulnerabilityMethod;
-import org.opensourceway.sbom.model.cyclonedx.VulnerabilitySeverity;
 import org.opensourceway.sbom.model.entity.Product;
 import org.opensourceway.sbom.model.entity.RawSbom;
 import org.opensourceway.sbom.model.enums.SbomContentType;
@@ -23,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,9 +60,9 @@ public class TestCommon {
         assertThat(pkg.getVersionInfo()).isEqualTo("20210324.2");
 
         SpdxRelationship relationship = spdxDocument.getRelationships().get(0);
-        assertThat(relationship.spdxElementId()).isEqualTo("SPDXRef-Package-PyPI-asttokens-2.0.5");
+        assertThat(relationship.spdxElementId()).isEqualTo("SPDXRef-Package-PyPI-scipy-1.7.3");
         assertThat(relationship.relationshipType().name()).isEqualTo(RelationshipType.DEPENDS_ON.name());
-        assertThat(relationship.relatedSpdxElement()).isEqualTo("SPDXRef-Package-PyPI-six-1.16.0");
+        assertThat(relationship.relatedSpdxElement()).isEqualTo("SPDXRef-Package-PyPI-numpy-1.21.6");
     }
 
     public static void assertCycloneDXDocument(CycloneDXDocument cycloneDXDocument) {
@@ -115,22 +115,6 @@ public class TestCommon {
         assertThat(dependency.getDependsOn().size()).isEqualTo(1);
         assertThat(dependency.getDependsOn().get(0)).isEqualTo("SPDXRef-Package-PyPI-six-1.16.0");
 
-        List<Vulnerability> vulnerabilities = cycloneDXDocument.getVulnerabilities();
-        assertThat(vulnerabilities.size()).isEqualTo(4);
-        Optional<Vulnerability> vulnerabilityOptional = vulnerabilities.stream().filter(vlnerability ->
-                vlnerability.getId().equals("CVE-2022-00001-test")).findFirst();
-        assertThat(vulnerabilityOptional.isPresent()).isTrue();
-        Vulnerability vulnerability = vulnerabilityOptional.get();
-        assertThat(vulnerability.getAffects().size()).isEqualTo(1);
-        assertThat(vulnerability.getAffects().get(0).getRef()).isEqualTo("SPDXRef-Package-PyPI-asttokens-2.0.5");
-        assertThat(vulnerability.getSource().getName()).isEqualTo("NVD");
-        assertThat(vulnerability.getSource().getUrl()).isEqualTo("http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2022-00001-test");
-        assertThat(vulnerability.getRatings().size()).isEqualTo(1);
-        assertThat(vulnerability.getRatings().get(0).getMethod()).isEqualTo(VulnerabilityMethod.CVSS2);
-        assertThat(vulnerability.getRatings().get(0).getScore()).isEqualTo("9.8");
-        assertThat(vulnerability.getRatings().get(0).getSeverity()).isEqualTo(VulnerabilitySeverity.HIGH);
-        assertThat(vulnerability.getRatings().get(0).getVector()).isEqualTo("(AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)");
-
     }
 
     public void cleanPublishRawSbomData(String productName) {
@@ -147,5 +131,11 @@ public class TestCommon {
         if (existRawSbom != null) {
             rawSbomRepository.delete(existRawSbom);
         }
+    }
+
+    public static String extractSbomFromTar(byte[] tarBytes, String filename) throws IOException {
+        var tmpDirPath = Files.createTempDirectory("test");
+        FileUtil.extractTarGzipArchive(new ByteArrayInputStream(tarBytes), tmpDirPath.toString());
+        return Files.readString(tmpDirPath.resolve(filename));
     }
 }

@@ -40,7 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = {SbomManagerApplication.class, SbomApplicationContextHolder.class})
@@ -91,8 +90,7 @@ public class ExportControllerTests {
                         .contentType(MediaType.ALL)
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.spdxVersion").value("SPDX-2.2"));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -168,10 +166,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.json"))
-                .andExpect(jsonPath("$.spdxVersion").value("SPDX-2.2"))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.json.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.json");
         SpdxDocument spdxDocument = Mapper.jsonSbomMapper.readValue(content, SpdxDocument.class);
         TestCommon.assertSpdxDocument(spdxDocument);
     }
@@ -189,11 +187,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.json"))
-                .andExpect(jsonPath("$.bomFormat").value("CycloneDX"))
-                .andExpect(jsonPath("$.specVersion").value("1.4"))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.json.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.json");
         CycloneDXDocument cycloneDXDocument = Mapper.jsonSbomMapper.readValue(content, CycloneDXDocument.class);
         TestCommon.assertCycloneDXDocument(cycloneDXDocument);
     }
@@ -210,10 +207,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.yaml"))
-                .andExpect(content().string(containsString("spdxVersion: \"SPDX-2.2\"")))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.yaml.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.yaml");
         SpdxDocument spdxDocument = Mapper.yamlSbomMapper.readValue(content, SpdxDocument.class);
         TestCommon.assertSpdxDocument(spdxDocument);
     }
@@ -231,11 +228,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.yaml"))
-                .andExpect(content().string(containsString("bomFormat: \"CycloneDX\"")))
-                .andExpect(content().string(containsString("specVersion: \"1.4\"")))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.yaml.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.yaml");
         CycloneDXDocument cycloneDXDocument = Mapper.yamlSbomMapper.readValue(content, CycloneDXDocument.class);
         TestCommon.assertCycloneDXDocument(cycloneDXDocument);
     }
@@ -252,10 +248,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.xml"))
-                .andExpect(content().string(containsString("<spdxVersion>SPDX-2.2</spdxVersion>")))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.xml.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-spdx-sbom.xml");
         SpdxDocument spdxDocument = Mapper.xmlSbomMapper.readValue(content, SpdxDocument.class);
         TestCommon.assertSpdxDocument(spdxDocument);
     }
@@ -273,11 +269,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.xml"))
-                .andExpect(content().string(containsString("<bomFormat>CycloneDX</bomFormat>")))
-                .andExpect(content().string(containsString("<specVersion>1.4</specVersion>")))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.xml.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_PRODUCT_NAME + "-cyclonedx-sbom.xml");
         CycloneDXDocument cycloneDXDocument = Mapper.xmlSbomMapper.readValue(content, CycloneDXDocument.class);
         TestCommon.assertCycloneDXDocument(cycloneDXDocument);
     }
@@ -294,10 +289,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-spdx-sbom.json"))
-                .andExpect(jsonPath("$.spdxVersion").value("SPDX-2.2"))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-spdx-sbom.json.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-spdx-sbom.json");
         SpdxDocument spdxDocument = Mapper.jsonSbomMapper.readValue(content, SpdxDocument.class);
 
         Optional<SpdxPackage> hivePkgOptional = spdxDocument.getPackages().stream()
@@ -351,11 +346,10 @@ public class ExportControllerTests {
                         .accept(MediaType.APPLICATION_OCTET_STREAM))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-cyclonedx-sbom.json"))
-                .andExpect(jsonPath("$.bomFormat").value("CycloneDX"))
-                .andExpect(jsonPath("$.specVersion").value("1.4"))
+                .andExpect(header().string("Content-Disposition", "attachment;filename=" + TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-cyclonedx-sbom.json.tar.gz"))
                 .andReturn();
-        String content = mvcResult.getResponse().getContentAsString();
+        String content = TestCommon.extractSbomFromTar(mvcResult.getResponse().getContentAsByteArray(),
+                TestConstants.SAMPLE_REPODATA_PRODUCT_NAME + "-cyclonedx-sbom.json");
         CycloneDXDocument cycloneDXDocument = Mapper.jsonSbomMapper.readValue(content, CycloneDXDocument.class);
 
         Optional<Component> hivePkgOptional = cycloneDXDocument.getComponents().stream()

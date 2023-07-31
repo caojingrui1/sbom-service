@@ -2,6 +2,7 @@ package org.opensourceway.sbom.service.sbom.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.apache.commons.lang3.StringUtils;
 import org.opensourceway.sbom.analyzer.TraceDataAnalyzer;
 import org.opensourceway.sbom.api.reader.SbomReader;
@@ -40,6 +41,7 @@ import org.opensourceway.sbom.model.entity.Vulnerability;
 import org.opensourceway.sbom.model.enums.SbomContentType;
 import org.opensourceway.sbom.model.enums.SbomFormat;
 import org.opensourceway.sbom.model.enums.SbomSpecification;
+import org.opensourceway.sbom.model.exception.AddProductException;
 import org.opensourceway.sbom.model.pojo.request.sbom.AddProductRequest;
 import org.opensourceway.sbom.model.pojo.request.sbom.PublishSbomRequest;
 import org.opensourceway.sbom.model.pojo.request.sbom.QuerySbomPackagesRequest;
@@ -66,6 +68,7 @@ import org.opensourceway.sbom.utils.PublishSbomRequestValidator;
 import org.opensourceway.sbom.utils.PurlUtil;
 import org.opensourceway.sbom.utils.SbomApplicationContextHolder;
 import org.opensourceway.sbom.utils.SbomMapperUtil;
+import org.opensourceway.sbom.utils.SignatureUtil;
 import org.opensourceway.sbom.utils.UrlUtil;
 import org.opensourceway.sbom.utils.VersionUtil;
 import org.slf4j.Logger;
@@ -84,9 +87,11 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -142,6 +147,9 @@ public class SbomServiceImpl implements SbomService {
 
     @Autowired
     private ProductConfigCache productConfigCache;
+
+    @Autowired
+    private SignatureUtil signatureUtil;
 
     @Value("${sbom.service.website.domain}")
     private String sbomWebsiteDomain;
@@ -663,34 +671,34 @@ public class SbomServiceImpl implements SbomService {
     @Override
     public void addProduct(AddProductRequest req) {
         if (Arrays.stream(addableProductTypes).noneMatch(it -> StringUtils.equals(it, req.getProductType()))) {
-            throw new RuntimeException("not allowed to add product with type [%s]".formatted(req.getProductType()));
+            throw new AddProductException("not allowed to add product with type [%s]".formatted(req.getProductType()));
         }
 
         productTypeRepository.lockTable();
         productTypeRepository.findById(req.getProductType()).orElseThrow(
-                () -> new RuntimeException("invalid productType: %s, valid types: %s".formatted(req.getProductType(), queryProductType())));
+                () -> new AddProductException("invalid productType: %s, valid types: %s".formatted(req.getProductType(), queryProductType())));
 
         productRepository.findByName(req.getProductName()).ifPresent(product -> {
-            throw new RuntimeException("product [%s] already exists".formatted(req.getProductName()));
+            throw new AddProductException("product [%s] already exists".formatted(req.getProductName()));
         });
 
         Map<String, ProductConfig> productConfigs = productConfigRepository.findByProductTypeOrderByOrdAsc(req.getProductType())
                 .stream().collect(Collectors.toMap(ProductConfig::getName, Function.identity()));
         Set<String> productConfigNames = productConfigs.values().stream().map(ProductConfig::getName).collect(Collectors.toSet());
         if (!productConfigNames.containsAll(req.getAttribute().keySet())) {
-            throw new RuntimeException("invalid attribute keys, valid keys: %s".formatted(productConfigNames));
+            throw new AddProductException("invalid attribute keys, valid keys: %s".formatted(productConfigNames));
         }
 
         if (req.getAttribute().values().stream().anyMatch(it -> StringUtils.isBlank(it.getValue()) || StringUtils.isBlank(it.getLabel()))) {
-            throw new RuntimeException("there exists blank values or labels in attribute");
+            throw new AddProductException("there exists blank values or labels in attribute");
         }
 
         req.getAttribute().forEach((key, value) -> productConfigs.get(key).getProductConfigValues().forEach(it -> {
             if (StringUtils.equals(it.getValue(), value.getValue()) && !StringUtils.equals(it.getLabel(), value.getLabel())) {
-                throw new RuntimeException("the label of value [%s] already exists, it is [%s], not [%s]".formatted(value.getValue(), it.getLabel(), value.getLabel()));
+                throw new AddProductException("the label of value [%s] already exists, it is [%s], not [%s]".formatted(value.getValue(), it.getLabel(), value.getLabel()));
             }
             if (StringUtils.equals(it.getLabel(), value.getLabel()) && !StringUtils.equals(it.getValue(), value.getValue())) {
-                throw new RuntimeException("the value of label [%s] already exists, it is [%s], not [%s]".formatted(value.getLabel(), it.getValue(), value.getValue()));
+                throw new AddProductException("the value of label [%s] already exists, it is [%s], not [%s]".formatted(value.getLabel(), it.getValue(), value.getValue()));
             }
         }));
 
@@ -701,10 +709,10 @@ public class SbomServiceImpl implements SbomService {
         try {
             attr = Mapper.objectMapper.writeValueAsString(productAttribute);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("attribute is not a valid json object");
+            throw new AddProductException("attribute is not a valid json object");
         }
         Optional.ofNullable(productRepository.queryProductByFullAttributes(attr)).ifPresent(product -> {
-            throw new RuntimeException("product with attribute [%s] already exists, its name is [%s]".formatted(req.getAttribute(), product.getName()));
+            throw new AddProductException("product with attribute [%s] already exists, its name is [%s]".formatted(req.getAttribute(), product.getName()));
         });
 
         req.getAttribute().forEach((key, value) -> {
@@ -727,7 +735,7 @@ public class SbomServiceImpl implements SbomService {
 
     @Override
     public byte[] writePackageSbom(String productName, String pkgName, String pkgVersion,
-                                   String spec, String specVersion, String format) throws IOException {
+            String spec, String specVersion, String format) throws IOException {
         format = StringUtils.lowerCase(format);
         spec = StringUtils.lowerCase(spec);
 
@@ -763,7 +771,7 @@ public class SbomServiceImpl implements SbomService {
         Sbom sbom = sbomRepository.findByProductName(productName)
                 .orElseThrow(() -> new RuntimeException("can't find %s's sbom metadata".formatted(productName)));
         var nameToSbom = sbom.getPackages().stream().collect(Collectors.toMap(
-                pkg -> "%s-%s-%s-%s-sbom.%s".formatted(productName.replace("/", "_").replace("\\", "_"),
+                pkg -> "%s-%s-%s-%s-sbom.%s".formatted(URLEncoder.encode(productName, StandardCharsets.UTF_8),
                         pkg.getName(), pkg.getVersion(), spec, format),
                 pkg -> {
                     try {
@@ -773,5 +781,20 @@ public class SbomServiceImpl implements SbomService {
                     }
                 }));
         return FileUtil.tarBytes(nameToSbom);
+    }
+
+    @Override
+    public byte[] generateVerificationAndTar(String sbomFilename, byte[] sbomContent) throws IOException {
+        Map<String, byte[]> nameToData = new HashMap<>();
+        nameToData.put(sbomFilename, sbomContent);
+        nameToData.put("%s.sha256".formatted(sbomFilename),
+                Hashing.sha256().hashBytes(sbomContent).toString().getBytes(StandardCharsets.UTF_8));
+
+        SignatureUtil.SignFile signFile = signatureUtil.sign(sbomFilename, sbomContent);
+        if (Objects.nonNull(signFile)) {
+            nameToData.put(signFile.getFilename(), signFile.getContent());
+        }
+
+        return FileUtil.tarBytes(nameToData);
     }
 }
